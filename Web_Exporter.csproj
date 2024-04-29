@@ -2,6 +2,11 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
+		<LangVersion>12</LangVersion>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<AssemblyTitle>Web_Exporter</AssemblyTitle>
+		<FileVersion></FileVersion>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
