@@ -26,4 +26,9 @@
 		<StartAction>Program</StartAction>
 	</PropertyGroup>
 	
+	<Target Name="RenameOutput" AfterTargets="Build">
+		<Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName).gha" />
+		<Message Text="Renamed output file to .gha" Importance="high" />
+	</Target>
+
 </Project>
