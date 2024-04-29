@@ -15,7 +15,7 @@ namespace Web_Exporter
             private string _lastResult = "";
             public GltfExport()
               : base("Gltf Exporter", "gltfExp",
-                "Description",
+                "Exports geometries or rhino scene as gltf file for web view",
                 "Web", "Gltf")
             {
             }
