@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grasshopper" Version="8.4.24044.15001" />
+		<PackageReference Include="RhinoCommon" Version="8.4.24044.15001" />
+	</ItemGroup>
+	
+	<PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
+		<StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
+		<StartArguments>
+			/nosplash /runscript="_-RunScript (
+			Set GH = Rhino.GetPlugInObject(""Grasshopper"")
+			<!--Set ghFilePath = ""$(ProjectDir)files\\Workbench_GLTF_Export.ghx""
+			Call GH.OpenDocument(ghFilePath)-->
+			Call GH.OpenDocument(""C:\Data\Repos\GH-Helper\Web_Exporter\GLTF-Export\files\Workbench_GLTF_Export.ghx"")
+			<!--_Grasshopper-->
+			)"
+		</StartArguments>
+		<StartAction>Program</StartAction>
+	</PropertyGroup>
+	
+</Project>
