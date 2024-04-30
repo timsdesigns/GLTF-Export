@@ -32,8 +32,6 @@ namespace Web_Exporter
             pManager[4].Optional = true;
             pManager.AddGenericParameter("FileGltfWriteOptions", "Options", "Write file options.", GH_ParamAccess.item);                //5
             pManager[5].Optional = true;
-            pManager.AddGenericParameter("ArchivableDictionary", "ArchiveCollection", "Export selection options.", GH_ParamAccess.item);//6
-            pManager[6].Optional = true;
         }
         protected override void RegisterOutputParams(GH_OutputParamManager pManager) =>
             pManager.AddTextParameter("Errors and Feedback", "E", "Preliminary feedback.", GH_ParamAccess.item);
@@ -43,17 +41,13 @@ namespace Web_Exporter
             bool export = false;
             string name = "";
             string loc = "";
-            //GH_Structure<IGH_Goo>? geo = null;
-            //GH_Structure<GH_String>? material = null;
             object? options = null;
-            Rhino.Collections.ArchivableDictionary? aCollection = null;
             DA.GetData("Export", ref export);
             DA.GetData("File Name", ref name);
             DA.GetData("Folder", ref loc);
             DA.GetDataTree(3, out GH_Structure<IGH_GeometricGoo>? geo);
             DA.GetDataTree(4, out GH_Structure<GH_String>? material);
             DA.GetData("FileGltfWriteOptions", ref options);
-            DA.GetData("ArchivableDictionary", ref aCollection);
             #endregion
             // Sanity
             if (loc == null || !Directory.Exists(loc))
@@ -89,10 +83,7 @@ namespace Web_Exporter
                 switch (scene)
                 {
                     case false:
-                        Rhino.Collections.ArchivableDictionary archiveCollection =
-                            aCollection is Rhino.Collections.ArchivableDictionary ?
-                            aCollection as Rhino.Collections.ArchivableDictionary :
-                            optionsGltf!.ToDictionary();
+                        Rhino.Collections.ArchivableDictionary archiveCollection = optionsGltf!.ToDictionary();
 
                         // creating temporary geometry(ies)
                         Rhino.DocObjects.ObjectAttributes att = new Rhino.DocObjects.ObjectAttributes
@@ -188,6 +179,8 @@ namespace Web_Exporter
                 UseDisplayColorForUnsetMaterials = true,
                 UseDracoCompression = true
             };
+
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.gltfGH;
         public override Guid ComponentGuid => new Guid("d954350d-dcb0-486e-b78b-dd251424ec4a");
     }
 }
