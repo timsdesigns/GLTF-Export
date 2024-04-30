@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Rhino8": {
+        "commandName": "Executable",
+        "executablePath": "C:\\Program Files\\Rhino 8\\System\\Rhino.exe",
+        "commandLineArgs": "-nosplash -notemplate /netcore /runscript=\"_open \"\"$(ProjectDir)files\\Workbench_GLTF_Export.ghx\"\" _Enter\"",
+        "environmentVariables": {
+            "RHINO_PACKAGE_DIRS": "$(ProjectDir)$(OutputPath)"
+        }
+    }
+  }
+}

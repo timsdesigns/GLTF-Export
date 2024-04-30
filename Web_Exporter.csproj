@@ -5,7 +5,7 @@
 		<LangVersion>12</LangVersion>
 		<EnableDynamicLoading>true</EnableDynamicLoading>
 		<AssemblyTitle>Web_Exporter</AssemblyTitle>
-		<FileVersion></FileVersion>
+		<TargetExt>.gha</TargetExt>
 		<AssemblyVersion>1.0.0.0</AssemblyVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -35,21 +35,7 @@
 	
 	<PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
 		<StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
-		<StartArguments>
-			/nosplash /runscript="_-RunScript (
-			Set GH = Rhino.GetPlugInObject(""Grasshopper"")
-			<!--Set ghFilePath = ""$(ProjectDir)files\\Workbench_GLTF_Export.ghx""
-			Call GH.OpenDocument(ghFilePath)-->
-			Call GH.OpenDocument(""C:\Data\Repos\GH-Helper\Web_Exporter\GLTF-Export\files\Workbench_GLTF_Export.ghx"")
-			<!--_Grasshopper-->
-			)"
-		</StartArguments>
 		<StartAction>Program</StartAction>
 	</PropertyGroup>
-	
-	<Target Name="RenameOutput" AfterTargets="Build">
-		<Move SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName).gha" />
-		<Message Text="Renamed output file to .gha" Importance="high" />
-	</Target>
 
 </Project>
