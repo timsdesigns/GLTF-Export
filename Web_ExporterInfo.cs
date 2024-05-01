@@ -9,7 +9,7 @@ namespace Web_Exporter
         public override string Name => "Web_Exporter";
         public override Bitmap Icon => Properties.Resources.glTF_LogoBug_48px_Nov17;
         public override string Description => "Enabling 3d Models for web view";
-        public override Guid Id => new Guid("74080384-265c-4e59-a504-e2ee43d92151");
+        public override Guid Id => new("74080384-265c-4e59-a504-e2ee43d92151");
         public override string AuthorName => "Tim Fischer";
         public override string AuthorContact => "https://www.comdecon.com";
 #if NET7_0_OR_GREATER
