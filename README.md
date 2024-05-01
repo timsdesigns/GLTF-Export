@@ -32,7 +32,7 @@ A Grasshopper Plugin for web export of 3d models
  2. It outputs only the grasshopper geometry
 
 ### GLTF-Options (Optional) [v1.1.0+]
- - Here you can edit all the export settings in one place
+ - Here you can edit all the [export settings](https://docs.mcneel.com/rhino/8/help/en-us/fileio/gltf_import_export.htm) in one place
  1. Draco Compression
  2. Formatting
  3. Mesh Settings
