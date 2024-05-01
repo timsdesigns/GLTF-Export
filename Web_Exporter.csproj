@@ -6,7 +6,7 @@
 		<EnableDynamicLoading>true</EnableDynamicLoading>
 		<AssemblyTitle>Web_Exporter</AssemblyTitle>
 		<TargetExt>.gha</TargetExt>
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<AssemblyVersion>1.1.0.0</AssemblyVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
