@@ -1,14 +1,10 @@
-﻿using Grasshopper;
+﻿using Grasshopper.GUI;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Types;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Rhino;
 using Rhino.FileIO;
 using Rhino.Geometry;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Web_Exporter
 {
@@ -16,14 +12,14 @@ namespace Web_Exporter
     {
         private string _lastResult = "";
         public GltfExport()
-          : base("Gltf Exporter", "gltfExp",
+          : base("Gltf Exporter", "GltfExporter",
             "Exports geometries or rhino scene as gltf file for web view",
             "Web", "Gltf")
         {
         }
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddBooleanParameter("Export", "Exp", "Use button to export when needed.", GH_ParamAccess.item, false);      //0
+            pManager.AddBooleanParameter("Export", "Exp", "Use button to export when needed.", GH_ParamAccess.item);      //0
             pManager.AddTextParameter("File Name", "Name", "Name your output file.", GH_ParamAccess.item, "model_01");           //1
             pManager.AddTextParameter("Folder", "Path", "The folder you want to store the output in.", GH_ParamAccess.item);            //2
             pManager.AddGeometryParameter("Geometry Collection", "Geo", "Add the geometry you like to export.", GH_ParamAccess.tree);   //3
@@ -38,16 +34,12 @@ namespace Web_Exporter
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             #region imputs
-            bool export = false;
-            string name = "";
-            string loc = "";
-            object? options = null;
-            DA.GetData("Export", ref export);
-            DA.GetData("File Name", ref name);
-            DA.GetData("Folder", ref loc);
+            bool export = false;  DA.GetData("Export", ref export);
+            string name = "";  DA.GetData("File Name", ref name);
+            string loc = "";  DA.GetData("Folder", ref loc);
             DA.GetDataTree(3, out GH_Structure<IGH_GeometricGoo>? geo);
             DA.GetDataTree(4, out GH_Structure<GH_String>? material);
-            DA.GetData("FileGltfWriteOptions", ref options);
+            object? options = null;  DA.GetData("FileGltfWriteOptions", ref options);
             #endregion
             // Sanity
             if (loc == null || !Directory.Exists(loc))
@@ -57,7 +49,10 @@ namespace Web_Exporter
             }
             var filePath = loc;
             filePath += $@"\{name}.gltf";
-
+            // Label Input
+            var button = Params.Input.Find(p => p.NickName == "Exp")!.Sources[0].Attributes.DocObject;
+            if (button.GetType() == typeof(Grasshopper.Kernel.Special.GH_ButtonObject))
+                ((Grasshopper.Kernel.Special.GH_ButtonObject)button).NickName = "Export";
             // Mode
             bool scene = false;
             Message = "Geometry";
@@ -76,7 +71,7 @@ namespace Web_Exporter
 
             if (!export) return;
             string res = "";
-            List<Guid> ids = new List<Guid>();
+            List<Guid> ids = [];
             RhinoDoc doc = RhinoDoc.ActiveDoc;
             try
             {
@@ -86,7 +81,7 @@ namespace Web_Exporter
                         Rhino.Collections.ArchivableDictionary archiveCollection = optionsGltf!.ToDictionary();
 
                         // creating temporary geometry(ies)
-                        Rhino.DocObjects.ObjectAttributes att = new Rhino.DocObjects.ObjectAttributes
+                        Rhino.DocObjects.ObjectAttributes att = new()
                         {
                             LayerIndex = 0,
                             MaterialSource = Rhino.DocObjects.ObjectMaterialSource.MaterialFromLayer
@@ -159,8 +154,8 @@ namespace Web_Exporter
             DA.SetData("Errors and Feedback", _lastResult);
             #endregion Outputs
         }
-        private FileGltfWriteOptions DefaultOptions() =>
-            new FileGltfWriteOptions()
+        private static FileGltfWriteOptions DefaultOptions() =>
+            new()
             {
                 CullBackfaces = true,
                 DracoCompressionLevel = 10,
@@ -181,6 +176,6 @@ namespace Web_Exporter
             };
 
         protected override System.Drawing.Bitmap Icon => Properties.Resources.gltfGH;
-        public override Guid ComponentGuid => new Guid("d954350d-dcb0-486e-b78b-dd251424ec4a");
+        public override Guid ComponentGuid => new("d954350d-dcb0-486e-b78b-dd251424ec4a");
     }
 }
