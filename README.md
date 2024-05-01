@@ -9,8 +9,8 @@ A Grasshopper Plugin for web export of 3d models
   - [Export](#export)
   - [Motivation](#motivation)
   - [Component Descriptions](#component-descriptions)
-    - [GLTF-Export](#gltf-export)
-    - [GLTF-Options (Optional) \[v1.1.0+\]](#gltf-options-optional-v110)
+    - [ GLTF-Export](#-gltf-export)
+    - [ GLTF-Options (Optional) \[v1.1.0+\]](#-gltf-options-optional-v110)
 
 ## Workflow
  - some examples ![alt text](<files//gltfRH_ExampleDef2.png>)
@@ -26,12 +26,12 @@ A Grasshopper Plugin for web export of 3d models
 
 ## Component Descriptions
 
-### GLTF-Export
+### ![Component Icon](/images/gltfGH.png) GLTF-Export
  - This Component implements two ways to output the gltfs
  1. It outputs the entire scene
  2. It outputs only the grasshopper geometry
 
-### GLTF-Options (Optional) [v1.1.0+]
+### ![Component Icon](/images/gltfOptionsGH.png) GLTF-Options (Optional) [v1.1.0+]
  - Here you can edit all the <a href="https://docs.mcneel.com/rhino/8/help/en-us/fileio/gltf_import_export.htm" target="_blank">export settings</a> in one place
  1. Draco Compression
  2. Formatting
