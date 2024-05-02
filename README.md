@@ -11,6 +11,7 @@ A Grasshopper Plugin for web export of 3d models
   - [Component Descriptions](#component-descriptions)
     - [ GLTF-Export](#-gltf-export)
     - [ GLTF-Options (Optional) \[v1.1.0+\]](#-gltf-options-optional-v110)
+    - [Adding Materials](#adding-materials)
 
 ## Workflow
  - some examples ![alt text](<files//gltfRH_ExampleDef2.png>)
@@ -36,3 +37,8 @@ A Grasshopper Plugin for web export of 3d models
  1. Draco Compression
  2. Formatting
  3. Mesh Settings
+
+ ### Adding Materials
+ - A simple video each; showing:
+   - <video src="./files/ExportWithMaterial.mp4" width="320" height="240" controls>how to use this in general</video>
+   - <video src="./files/ExportWithDownloadedMaterial.mp4" width="320" height="240" controls>how to use this with a downloaded material</video>
