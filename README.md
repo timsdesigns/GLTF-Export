@@ -40,8 +40,6 @@ A Grasshopper Plugin for web export of 3d models
 
  ### Adding Materials
  - A simple video each; showing:
-   - <video src="./files/ExportWithMaterial.mp4" height="240" controls>how to use this in general</video>
-   - <video src="./files/ExportWithDownloadedMaterial.mp4" height="240" controls>how to use this with a downloaded material</video>
-   - <video src="https://vimeo.com/manage/videos/942102502" height="240" controls>how to use this in general</video>
-   - <video src="https://vimeo.com/manage/videos/942102471" height="240" controls>how to use this with a downloaded material</video>
+   - [Export GLTF With Custom Material](https://vimeo.com/manage/videos/942102502) - how to use this in general <video src="./files/ExportWithMaterial.mp4" height="240" controls>how to use this in general</video>
+   - [Export GLTF With Downloaded Material](https://vimeo.com/manage/videos/942102471) - how to use this with a downloaded material <video src="./files/ExportWithDownloadedMaterial.mp4" height="240" controls>how to use this with a downloaded material</video>
  - Find out more about <a href="https://docs.mcneel.com/rhino/8/help/en-us/commands/materials.htm#physicallybased" target="_blank"><img src="https://docs.mcneel.com/rhino/8/help/en-us/image/icons/material_pbr.png" alt="" height="20"> how to create Physically Based Materials in the Rhino Documentation</a>
