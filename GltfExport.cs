@@ -1,16 +1,20 @@
-﻿using Grasshopper.GUI;
-using Grasshopper.Kernel;
+﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Rhino;
+using Rhino.DocObjects;
 using Rhino.FileIO;
 using Rhino.Geometry;
+using Rhino.Render;
+using Rhino.Render.ChangeQueue;
+using System.Collections.Concurrent;
 
 namespace Web_Exporter
 {
     public class GltfExport : GH_Component
     {
         private string _lastResult = "";
+        private bool _executing = false;
         public GltfExport()
           : base("Gltf Exporter", "GltfExporter",
             "Exports geometries or rhino scene as gltf file for web view",
@@ -19,7 +23,7 @@ namespace Web_Exporter
         }
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddBooleanParameter("Export", "Exp", "Use button to export when needed.", GH_ParamAccess.item);      //0
+            pManager.AddBooleanParameter("Export", "Exp", "Use button to export when needed.", GH_ParamAccess.item);                    //0
             pManager.AddTextParameter("File Name", "Name", "Name your output file.", GH_ParamAccess.item, "model_01");           //1
             pManager.AddTextParameter("Folder", "Path", "The folder you want to store the output in.", GH_ParamAccess.item);            //2
             pManager.AddGeometryParameter("Geometry Collection", "Geo", "Add the geometry you like to export.", GH_ParamAccess.tree);   //3
@@ -34,15 +38,15 @@ namespace Web_Exporter
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             #region imputs
-            bool export = false;  DA.GetData("Export", ref export);
-            string name = "";  DA.GetData("File Name", ref name);
-            string loc = "";  DA.GetData("Folder", ref loc);
+            bool export = false; DA.GetData("Export", ref export);            
+            string name = ""; DA.GetData("File Name", ref name);
+            string loc = ""; DA.GetData("Folder", ref loc);
             DA.GetDataTree(3, out GH_Structure<IGH_GeometricGoo>? geo);
             DA.GetDataTree(4, out GH_Structure<GH_String>? material);
-            object? options = null;  DA.GetData("FileGltfWriteOptions", ref options);
+            object? options = null; DA.GetData("FileGltfWriteOptions", ref options);
             #endregion
             // Sanity
-            if (loc == null || !Directory.Exists(loc))
+            if (!Directory.Exists(loc))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Path does not exist on machine.");
                 return;
@@ -64,93 +68,103 @@ namespace Web_Exporter
                 Message = "Scene";
             }
 
-            FileGltfWriteOptions optionsGltf =
+            FileGltfWriteOptions? optionsGltf =
                 options != null
-                && options! is FileGltfWriteOptions ?
+                && options is FileGltfWriteOptions ?
                 options as FileGltfWriteOptions : DefaultOptions();
 
-            if (!export) return;
-            string res = "";
+            if (!export || _executing)
+            {
+                if(_executing) _lastResult = "executing in background...";
+                goto Outputs;
+            }
+            _executing = true;
             List<Guid> ids = [];
             RhinoDoc doc = RhinoDoc.ActiveDoc;
-            try
+            Task.Run(() =>
             {
-                switch (scene)
+                string res= "";
+                try
                 {
-                    case false:
-                        Rhino.Collections.ArchivableDictionary archiveCollection = optionsGltf!.ToDictionary();
+                    switch (scene)
+                    {
+                        case false:
+                            Rhino.Collections.ArchivableDictionary archiveCollection = optionsGltf!.ToDictionary();
 
-                        // creating temporary geometry(ies)
-                        Rhino.DocObjects.ObjectAttributes att = new()
-                        {
-                            LayerIndex = 0,
-                            MaterialSource = Rhino.DocObjects.ObjectMaterialSource.MaterialFromLayer
-                        };
-                        foreach (var branch in geo!.Branches)
-                            foreach (var g in branch)
+                            // material assignment and baking
+                            int path = 0;
+                            foreach (var branch in geo!.Branches)
                             {
-                                g.CastTo<GeometryBase>(out GeometryBase geometry);
-                                ids.Add(doc.Objects.Add(geometry, att));
-                            }
-                        RhinoApp.Write("Object(s) baked\n", true);
-
-                        // select the object(s)
-                        foreach (var id in ids)
-                            doc.Objects.Select(id, true);
-                        RhinoApp.Write("Object(s) selected\n", true);
-
-                        // Assign the material(s) to the object(s) if exist(s)
-                        int b = 0;
-                        int i = 0;
-                        foreach (var branch in material.Branches)
-                        {
-                            foreach (var m in branch)
-                            {
-                                var materialRH = doc.RenderMaterials.FirstOrDefault(n => n.Name == m.Value);
-                                if (materialRH != null)
+                                var matLst = material.Branches[RepeatLast(material.Branches.Count, path)]; // get mat branch list (repeating last if less)
+                                int index = 0;
+                                RenderMaterial? materialRH = null;
+                                foreach (var g in branch)
                                 {
-                                    var rhObj = doc.Objects.FindId(ids[(b * i++) % geo.Paths[b].Length]); //TODO: check if that math works
-                                    rhObj.RenderMaterial = materialRH;
-                                    rhObj.CommitChanges();
-                                    doc.Views.Redraw();
-                                    RhinoApp.Write("Object material assigned\n", true);
+                                    // assigning custom materials if exists (repeating last item if less)
+                                    if (matLst != null)
+                                    {
+                                        var matName = matLst[RepeatLast(matLst.Count, index)].Value;
+                                        materialRH = doc.RenderMaterials
+                                            .FirstOrDefault(n => n.Name == matName); // get render mat
+                                    }
+
+                                    // baking
+                                    Guid id = doc.Objects.Add(GH_Convert.ToGeometryBase(g), new ObjectAttributes()
+                                    {
+                                        RenderMaterial = materialRH
+                                    });
+                                    ids.Add(id);
+                                    index++;
                                 }
+                                path++;
                             }
-                            b++;
-                        }
 
-                        // attempt export temp baked object
-                        if (doc.ExportSelected(filePath, archiveCollection))
-                            res = $"File written successfully to path: {filePath}";
-                        else res = "Something went wrong";
+                            RhinoApp.Write("Object(s) baked\n", true);
 
-                        break;
-                    default:
+                            // select object(s) into list
+                            foreach (Guid id in ids)
+                                doc.Objects.Select(id, true);
 
-                        // attempt export entire document scene
-                        if (FileGltf.Write(filePath, doc, optionsGltf))
-                            res = $"File written successfully to path: {filePath}";
-                        else res = "Something went wrong";
-                        break;
+                            RhinoApp.Write("Object(s) selected\n", true);
+
+                            // attempt export temp baked object(s)
+                            if (doc.ExportSelected(filePath, archiveCollection))
+                                res = $"File written successfully to path: {filePath}";
+                            else
+                                throw new Exception("Something went wrong when exporting");
+                            break;
+                        default:
+                            // attempt export entire document scene
+                            if (FileGltf.Write(filePath, doc, optionsGltf))
+                                res = $"File written successfully to path: {filePath}";
+                            else
+                                throw new Exception("Something went wrong when exporting");
+                            break;
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                res += "\nError\n" + e;
-            }
-            finally
-            {
-                RhinoApp.Write("Export attempted\n", true);
-                if (!scene)
+                catch (Exception e)
                 {
-                    // delete baked geometry quiet
-                    foreach (var id in ids)
-                        doc.Objects.Delete(id, true);
-                    RhinoApp.Write("Object(s) deleted\n", true);
+                    res += "\nError\n" + e;
                 }
-                _lastResult = res;
-            }
-            #region Outputs
+                finally
+                {
+
+                    RhinoApp.Write($"Export attempted to directory: {loc}\n", true);
+                    if (!scene)
+                    {
+                        // delete baked geometry quiet
+                        foreach (Guid id in ids)
+                            doc.Objects.Delete(id, true);
+                        RhinoApp.Write("Object(s) deleted\n", true);
+                    }
+
+                    _lastResult = $"[{DateTime.Now.ToShortTimeString()}] {res}";
+                    _executing = false;
+                    RhinoApp.InvokeOnUiThread(()=>this.ExpireSolution(true));
+                }
+            });
+        #region Outputs
+        Outputs:
             DA.SetData("Errors and Feedback", _lastResult);
             #endregion Outputs
         }
@@ -174,7 +188,8 @@ namespace Web_Exporter
                 UseDisplayColorForUnsetMaterials = true,
                 UseDracoCompression = true
             };
-
+        /// <summary>Repeat last if index exceeds collection count.</summary>
+        private static int RepeatLast(int last, int index) => index < last ? index : last - 1;
         protected override System.Drawing.Bitmap Icon => Properties.Resources.gltfGH;
         public override Guid ComponentGuid => new("d954350d-dcb0-486e-b78b-dd251424ec4a");
     }
