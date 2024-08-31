@@ -93,9 +93,25 @@ namespace Web_Exporter
 
                             // material assignment and baking
                             int path = 0;
+                            var matLst = material.Branches[RepeatLast(material.Branches.Count, path)]; // get mat branch list (repeating last if less)
+                            if (matLst == null || matLst.Count == 0)
+                            {
+                                res = "Please assign GLTF materials in Rhino before running this component.";
+                                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, res);
+                                return;
+                            }
+
+                            if (!matLst.Any(item => item != null))
+                            {
+                                res = "No valid GLTF materials found in Rhino.";
+                                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, res);
+                                return;
+                            }
+
+                            // Proceed with processing
+
                             foreach (var branch in geo!.Branches)
                             {
-                                var matLst = material.Branches[RepeatLast(material.Branches.Count, path)]; // get mat branch list (repeating last if less)
                                 int index = 0;
                                 RenderMaterial? materialRH = null;
                                 foreach (var g in branch)
